@@ -93,6 +93,54 @@
             font-style: italic;
         }
 
+        .role-selection {
+            margin-bottom: 30px;
+        }
+
+        .role-label {
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .role-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .role-option {
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid transparent;
+            border-radius: 50px;
+            padding: 10px 25px;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .role-option:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .role-option.selected {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .question-section {
+            display: none;
+        }
+
+        .question-section.show {
+            display: block;
+        }
+
         .question {
             color: white;
             font-size: 1.4em;
@@ -211,7 +259,6 @@
         }
 
         .answer {
-            color: #FFD700;
             font-size: 2.5em;
             font-weight: bold;
             margin-bottom: 20px;
@@ -219,14 +266,25 @@
             animation: pulse 2s infinite;
         }
 
+        .answer.negative {
+            color: #FFD700;
+        }
+
+        .answer.positive {
+            color: #FF69B4;
+        }
+
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
 
-        .crying-emoji {
+        .result-emoji {
             font-size: 5em;
             margin-bottom: 20px;
+        }
+
+        .crying-emoji {
             animation: bounce 1.5s ease-in-out infinite;
         }
 
@@ -235,6 +293,17 @@
             25% { transform: translateY(-15px); }
             50% { transform: translateY(-8px); }
             75% { transform: translateY(-3px); }
+        }
+
+        .love-emoji {
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.2); }
+            50% { transform: scale(1.1); }
+            75% { transform: scale(1.15); }
         }
 
         .final-message {
@@ -275,30 +344,40 @@
             <h1 class="title">✨ Magic Heart Reader ✨</h1>
             <p class="subtitle">The mystical powers will reveal the truth hidden in your heart...</p>
             
-            <div class="question">क्या आप मुझसे प्यार करती हो?</div>
-            
-            <div class="options">
-                <div class="option" data-value="haan">हाँ</div>
-                <div class="option" data-value="nahi">नहीं</div>
-                <div class="option" data-value="bohot">बहुत ज्यादा</div>
-                <div class="option" data-value="bilkul-nahi">बिल्कुल नहीं</div>
+            <div class="role-selection">
+                <div class="role-label">I am:</div>
+                <div class="role-options">
+                    <div class="role-option" data-role="girlfriend">Girlfriend</div>
+                    <div class="role-option" data-role="boyfriend">Boyfriend</div>
+                </div>
             </div>
-            
-            <button class="magic-button" id="magicButton" disabled>
-                🔮 Look for the Real Answer in Your Heart 🔮
-            </button>
-            
-            <div class="loading" id="loading">
-                Reading your heart's true feelings
+
+            <div class="question-section" id="questionSection">
+                <div class="question" id="questionText"></div>
+                
+                <div class="options">
+                    <div class="option" data-value="haan">हाँ</div>
+                    <div class="option" data-value="nahi">नहीं</div>
+                    <div class="option" data-value="bohot">बहुत ज्यादा</div>
+                    <div class="option" data-value="bilkul-nahi">बिल्कुल नहीं</div>
+                </div>
+                
+                <button class="magic-button" id="magicButton" disabled>
+                    🔮 Look for the Real Answer in Your Heart 🔮
+                </button>
+                
+                <div class="loading" id="loading">
+                    Reading your heart's true feelings
+                </div>
             </div>
         </div>
 
         <div class="magic-card result-page" id="resultPage">
             <div class="crystal-ball"></div>
             <div class="revelation">The magic has spoken... Your heart reveals:</div>
-            <div class="answer">नहीं! बिल्कुल नहीं!</div>
-            <div class="crying-emoji">😭</div>
-            <div class="final-message">That's me right now...</div>
+            <div class="answer" id="answerText"></div>
+            <div class="result-emoji" id="resultEmoji"></div>
+            <div class="final-message" id="finalMessage"></div>
         </div>
     </div>
 
@@ -319,6 +398,32 @@
 
         // Initialize stars
         createStars();
+
+        // Handle role selection
+        const roleOptions = document.querySelectorAll('.role-option');
+        const questionSection = document.getElementById('questionSection');
+        const questionText = document.getElementById('questionText');
+        let selectedRole = null;
+
+        roleOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove selection from all roles
+                roleOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selection to clicked role
+                option.classList.add('selected');
+                selectedRole = option.dataset.role;
+                
+                // Show question section and set appropriate question
+                if (selectedRole === 'girlfriend') {
+                    questionText.textContent = 'क्या आप अपनी BF से प्यार करती हो?';
+                } else {
+                    questionText.textContent = 'क्या आप अपने GF से प्यार करते हो?';
+                }
+                
+                questionSection.classList.add('show');
+            });
+        });
 
         // Handle option selection
         const options = document.querySelectorAll('.option');
@@ -342,7 +447,7 @@
 
         // Handle magic button click
         magicButton.addEventListener('click', () => {
-            if (!selectedOption) return;
+            if (!selectedOption || !selectedRole) return;
             
             // Show loading
             const loading = document.getElementById('loading');
@@ -353,6 +458,27 @@
             setTimeout(() => {
                 document.getElementById('questionPage').style.display = 'none';
                 const resultPage = document.getElementById('resultPage');
+                const answerText = document.getElementById('answerText');
+                const resultEmoji = document.getElementById('resultEmoji');
+                const finalMessage = document.getElementById('finalMessage');
+                
+                // Set result based on role
+                if (selectedRole === 'girlfriend') {
+                    // Girlfriend gets the harsh truth
+                    answerText.textContent = 'नहीं! बिल्कुल नहीं!';
+                    answerText.className = 'answer negative';
+                    resultEmoji.textContent = '😭';
+                    resultEmoji.className = 'result-emoji crying-emoji';
+                    finalMessage.textContent = "This is your BF right now...";
+                } else {
+                    // Boyfriend gets the loving answer
+                    answerText.textContent = 'हाँ हद से ज्यादा!';
+                    answerText.className = 'answer positive';
+                    resultEmoji.textContent = '😍💖';
+                    resultEmoji.className = 'result-emoji love-emoji';
+                    finalMessage.textContent = '';
+                }
+                
                 resultPage.style.display = 'block';
                 // Force reflow and add show class
                 setTimeout(() => {
